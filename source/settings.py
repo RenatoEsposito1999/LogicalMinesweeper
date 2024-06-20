@@ -1,0 +1,15 @@
+from math import floor
+WIDTH = 800
+HEIGHT = 800
+GRID_WIDTH = 600
+BUTTON_WIDTH = 200
+TITLE = "Logical Minesweeper"
+#CELL_SIZE = 133
+N_ROWS = 6
+N_COLS = 6
+N_MINES = floor((N_COLS*N_ROWS) * .2)
+BLACK = (0,0,0)
+WHITE = (255,255,255)
+GRAY = (200,200,200)
+LIGHT = (170,170,170)
+CELL_SIZE = floor(GRID_WIDTH/N_ROWS)
