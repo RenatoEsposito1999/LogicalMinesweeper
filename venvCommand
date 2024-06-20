@@ -1,0 +1,11 @@
+# Tutorial completo: https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
+Su sistemi basati su Unix o macOS:
+python3 -m venv .venv
+source venv/bin/activate
+
+Su Windows:
+py -m venv .venv
+.venv\Scripts\activate
+
+Per disattivare:
+deactivate
