@@ -1,48 +1,68 @@
 import pygame
 import settings as st
+
 class MinesweeperUI:
-    def __init__(self):
+    # List of tuples, where each one is a pair: rectangle, id
+    grid_rects = []
+    def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((st.WIDTH, st.HEIGHT))
-        pygame.display.set_caption(st.TITLE)
-        self.clock = pygame.time.Clock()
-        self.screen.fill(st.BLACK)
-        self.font = pygame.font.SysFont(None, 40)
+        # Window creation
+        self.window = pygame.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
+        pygame.display.set_caption('Minesweeper')
+        # Fonts for text
+        self.font = pygame.font.Font(None, 36)
 
-
+        self.next_button = self.draw_button(st.button_y1,"Next move")
+        self.reset_button = self.draw_button(st.button_y2,"Reset")
         self.draw_grid()
-        self.draw_buttons()
+        
+        # Refreshing the window
         pygame.display.flip()
-        running = True
-        while running:
+        # Main loop of the game
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    x, y = event.pos
-                    row, col = y // st.CELL_SIZE, x // st.CELL_SIZE
-                    '''if not self.logical_minesweeper:
-                        self.logical_minesweeper = LogicalMinesweeper(20, 20, 40)
-                        # Assicurati che il primo click non sia su una mina
-                        while self.logical_minesweeper.grid[row][col] == -1:
-                            self.logical_minesweeper = LogicalMinesweeper(20, 20, 40)
-                    self.logical_minesweeper.reveal(row, col)'''
-            
+                    pygame.quit()
+                    exit()
+        
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_pos = event.pos
+                        for rect, rect_id in self.grid_rects:
+                            if rect.collidepoint(mouse_pos):
+                                print(f"Clicked on rectangle ID: {rect_id}")
+                                break
+                        if self.next_button.collidepoint(mouse_pos):
+                            print("Next move")
+                        if self.reset_button.collidepoint(mouse_pos):
+                            print("Reset")
+                # IF TASTO DESTRO METTI BANDIERA
 
-        pygame.quit()
+    '''
+    Posso iniziare a fare il primo step cioè l'utente clicca next move e poiché c'è un flag che indica che qualsais è sicuro allora possiamo scoprire celle e quindi inizializzare il campo. 
+    Posso decidere empiricamente che il primo click è sicuramente vuoto o posso anche non farlo, ma nelle slide l'ho scritto. 
+    '''
+
 
     def draw_grid(self):
-        for x in range(0, st.GRID_WIDTH, st.CELL_SIZE):
-            for y in range(0, st.HEIGHT, st.CELL_SIZE):
-                rect = pygame.Rect(x, y, st.CELL_SIZE, st.CELL_SIZE)
-                pygame.draw.rect(self.screen, st.GRAY, rect, 1)
-    
-    def draw_buttons(self):
-        text1 = self.font.render("Next move", True, st.WHITE)
-        text_rect = text1.get_rect()
-        #button_next_move = pygame.Rect(st.GRID_WIDTH + 50, 100, 100, 50)
-        button_next_move = pygame.Rect(st.GRID_WIDTH + 50, 100, 100, 50)
-        pygame.draw.rect(self.screen, st.LIGHT, button_next_move)
+        for row in range(st.GRID_SIZE):
+            for col in range(st.GRID_SIZE):
+                rect = pygame.Rect(
+                    st.grid_x + col * (st.CELL_SIZE + st.GRID_PADDING),
+                    st.grid_y + row * (st.CELL_SIZE + st.GRID_PADDING),
+                    st.CELL_SIZE,
+                    st.CELL_SIZE
+                )
+                self.grid_rects.append((rect, row * st.GRID_SIZE + col))
+                pygame.draw.rect(self.window, st.GRID_COLOR, rect)
+                pygame.draw.rect(self.window, st.BORDER_COLOR, rect, 2)
 
+    def draw_button(self, y, text):
+        rect = pygame.Rect(st.button_x, y, st.BUTTON_WIDTH, st.BUTTON_HEIGHT)
+        pygame.draw.rect(self.window, st.BUTTON_COLOR, rect)
+        pygame.draw.rect(self.window, st.BORDER_COLOR, rect, 2)
+        text_surf = self.font.render(text, True, st.TEXT_COLOR)
+        text_rect = text_surf.get_rect(center=rect.center)
+        self.window.blit(text_surf, text_rect)
+        return rect
 
-        self.screen.blit(text1, (st.GRID_WIDTH + 60, 110))
