@@ -1,7 +1,13 @@
 
+from math import floor
+
+
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 400
 GRID_SIZE = 6
+N_COLS = 6
+N_ROWS = 6
+N_MINES = floor((N_COLS*N_ROWS) * .2)
 CELL_SIZE = 60
 GRID_PADDING = 2
 BUTTON_WIDTH = 150

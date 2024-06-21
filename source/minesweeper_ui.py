@@ -1,9 +1,11 @@
 import pygame
+import random
 import settings as st
-
+from minesweeper_logical import LogicalMinesweeper
 class MinesweeperUI:
     # List of tuples, where each one is a pair: rectangle, id
     grid_rects = []
+    first_move = True
     def __init__(self) -> None:
         pygame.init()
         # Window creation
@@ -12,7 +14,7 @@ class MinesweeperUI:
         # Fonts for text
         self.font = pygame.font.Font(None, 36)
 
-        self.next_button = self.draw_button(st.button_y1,"Next move")
+        self.next_button = self.draw_button(st.button_y1,"Start game")
         self.reset_button = self.draw_button(st.button_y2,"Reset")
         self.draw_grid()
         
@@ -33,14 +35,25 @@ class MinesweeperUI:
                                 print(f"Clicked on rectangle ID: {rect_id}")
                                 break
                         if self.next_button.collidepoint(mouse_pos):
-                            print("Next move")
+                            if self.first_move:
+                                self.next_button = self.draw_button(st.button_y1, "Next move")
+                                safe_row = random.randint(0,5)
+                                safe_col = random.randint(0, 5)
+                                self.logical_minesweeper = LogicalMinesweeper(self, safe_row,safe_col)
+                                self.first_move = False
+                            else:
+                                print("Next move")
                         if self.reset_button.collidepoint(mouse_pos):
                             print("Reset")
                 # IF TASTO DESTRO METTI BANDIERA
+            pygame.display.flip()
 
-    '''
-    Posso iniziare a fare il primo step cioè l'utente clicca next move e poiché c'è un flag che indica che qualsais è sicuro allora possiamo scoprire celle e quindi inizializzare il campo. 
-    Posso decidere empiricamente che il primo click è sicuramente vuoto o posso anche non farlo, ma nelle slide l'ho scritto. 
+
+    ''' 
+    Implementare il reset
+    Ora devo implementare la logica proposizionale
+    Aggiornare i rettangoli della griglia so già farlo,  Capire come far comunicare le informazioni grafiche.
+    Capire come far comunicare le informazioni grafiche.
     '''
 
 

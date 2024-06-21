@@ -6,7 +6,8 @@ import random
 # I nomi dei moduli devono essere tutti piccoli e separati da _ 
 # le costanti upper case.
 class LogicalMinesweeper:
-    def __init__(self):
+    def __init__(self, ui_instance, safe_row,safe_col):
+        self.ui = ui_instance
         # Initialization of the logical field
         self.field = []
         # field is a list of lists, each list is a row of the filed, each element of this rows 
@@ -30,8 +31,13 @@ class LogicalMinesweeper:
         # Posizionamento delle mine
         mines_placed = 0
         while mines_placed < st.N_MINES:
-            row = random.randint(0, st.N_ROWS - 1)
-            col = random.randint(0, st.N_COLS - 1)
+            row = safe_row
+            col = safe_col
+            print(f"safe_row = {safe_row} safe_col{safe_col}")
+            while row == safe_row:
+                row = random.randint(0, st.N_ROWS - 1)
+            while col == safe_col:
+                col = random.randint(0, st.N_COLS - 1)
             if self.field[row][col] != -1:
                 self.field[row][col] = -1
                 mines_placed += 1
