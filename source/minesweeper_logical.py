@@ -1,7 +1,6 @@
 from math import floor
 import settings as st
 import random
-from book_library import PropKB
 
 
 
@@ -13,7 +12,6 @@ from book_library import PropKB
 class LogicalMinesweeper:
     def __init__(self, ui_instance, safe_row,safe_col):
         self.ui = ui_instance
-        self.ai = PropKB()
         # Initialization of the logical field
         self.field = []
         # field is a list of lists, each list is a row of the filed, each element of this rows can be TRUE/numbers if it is safe
@@ -52,7 +50,20 @@ class LogicalMinesweeper:
         # Stampa del campo (solo per scopi di debug)
         for row in self.field:
             print(" ".join(str(cell) if cell != False else "*" for cell in row))
+        
 
+        print(self.get_n_mines(0,0))
+
+    def get_n_mines(self,row,col):
+        count = 0 
+        for i in range(max(0, row - 1), min(st.N_ROWS, row + 2)):
+            for j in range(max(0, col - 1), min(st.N_COLS, col + 2)):
+                if self.field[i][j] == False:
+                    count += 1
+        return count
+    
+    
+    '''
     def count_mines(self):
         # Calcolo del numero di mine adiacenti per ogni cella
         for row in range(st.N_ROWS):
@@ -65,6 +76,8 @@ class LogicalMinesweeper:
                         if self.field[i][j] == False:
                             count += 1
                 self.field[row][col] = count
+    '''
+        
 
         
         
