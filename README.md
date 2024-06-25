@@ -5,6 +5,7 @@ This project is part of the Artificial Intelligence course at the Master's Degre
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
+- [Background](#background)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
@@ -18,6 +19,11 @@ This Minesweeper project leverages propositional logic to enhance the classic ga
 - **Propositional Logic Integration:** Uses propositional logic to solve the Minesweeper game more efficiently.
 - **Object-Oriented Design:** Refactored the original code to be more modular and object-oriented, improving maintainability and readability.
 - **Enhanced GUI:** The graphical user interface has been slightly modified to enhance the user experience while maintaining the core functionality.
+
+## Background
+Minesweeper is a puzzle game that consists of a grid of cells, where some of the cells contain hidden “mines.” Clicking on a cell that contains a mine detonates the mine, and causes the user to lose the game. Clicking on a “safe” cell (i.e., a cell that does not contain a mine) reveals a number that indicates how many neighboring cells – where a neighbor is a cell that is one square to the left, right, up, down, or diagonal from the given cell – contain a mine.
+
+The goal of the game is to flag (i.e., identify) each of the mines. In many implementations of the game, including the one in this project, the player can flag a mine by right-clicking on a cell (or two-finger clicking, depending on the computer).
 
 ## Installation
 
