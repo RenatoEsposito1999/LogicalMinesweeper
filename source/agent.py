@@ -1,4 +1,6 @@
-
+# N:B Quando creo una sentences cell deve eserre di tipo cella.
+from cell import Cell
+from sentence import Sentence
 class MinesweeperAI():
     """
     Minesweeper game player
