@@ -6,6 +6,7 @@ This project is part of the Artificial Intelligence course at the Master's Degre
 - [Introduction](#introduction)
 - [Features](#features)
 - [Background](#background)
+- [Knowledge Representation](#KnowledgeRepresentation)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
@@ -24,7 +25,22 @@ This Minesweeper project leverages propositional logic to enhance the classic ga
 Minesweeper is a puzzle game that consists of a grid of cells, where some of the cells contain hidden “mines.” Clicking on a cell that contains a mine detonates the mine, and causes the user to lose the game. Clicking on a “safe” cell (i.e., a cell that does not contain a mine) reveals a number that indicates how many neighboring cells – where a neighbor is a cell that is one square to the left, right, up, down, or diagonal from the given cell – contain a mine.
 
 The goal of the game is to flag (i.e., identify) each of the mines. In many implementations of the game, including the one in this project, the player can flag a mine by right-clicking on a cell (or two-finger clicking, depending on the computer).
+## Knowledge Representation
+The AI's knowledge is represented as the following logical sentence:
 
+{A, B, C, D, E, F, G, H} = 1
+
+where {A, B, C etc.} are a set of cells, and the number 1 is the count of mines among those cells. This representation allows the following inferences to be made, e.g.:
+
+{D, E} = 0 This implies that none of D, E contain mines, i.e. all are safe cells.
+
+{A, B, C} = 3 This implies that all cells A, B, C contain a mine.
+
+Furthermore, in general when we have two sentences where sentence A is a subset of sentence B, a new sentence can be infered:
+
+setB - setA = countB - countA
+
+Hence while playing minesweeper and clicking on cells, logical sentences are added to the AI's knowledge base. Often as a new sentence is added to the knowledge base, further inferences can be made allowing the identification of mines or safe spaces.
 ## Installation
 
 To get started with this project, follow these steps:
