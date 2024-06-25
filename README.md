@@ -6,7 +6,7 @@ This project is part of the Artificial Intelligence course at the Master's Degre
 - [Introduction](#introduction)
 - [Features](#features)
 - [Background](#background)
-- [Knowledge Representation](#Knowledge Representation)
+- [Knowledge Representation](#Knowledge-Representation)
 - [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
