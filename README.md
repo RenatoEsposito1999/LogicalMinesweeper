@@ -36,7 +36,7 @@ To get started with this project, follow these steps:
    ```bash
    pip install -r requirements.txt
    '''
-### Usage
+## Usage
 To run the Minesweeper game, execute the following command:
 ```bash
 python minesweeper.py
