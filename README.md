@@ -26,16 +26,13 @@ To get started with this project, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/minesweeper-propositional-logic.git
-   '''
+   git clone https://github.com/RenatoEsposito1999/LogicalMinesweeper.git
 2. Navigate to the project directory:
    ```bash
-   cd minesweeper-propositional-logic
-   '''
+   cd LogicalMinesweeper
 4. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
-   '''
 ## Usage
 To run the Minesweeper game, execute the following command:
 ```bash
