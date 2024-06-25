@@ -6,6 +6,7 @@ import time
 #from source.Esempi.EsempioFunzionante import Minesweeper, MinesweeperAI
 from Esempi.EsempioFunzionante import MinesweeperAI
 from minesweeper import Minesweeper
+from agent import Agent
 
 HEIGHT = 6
 WIDTH = 6
@@ -42,7 +43,7 @@ mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
 # Create game and AI agent
 game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-ai = MinesweeperAI(height=HEIGHT, width=WIDTH)
+ai = Agent(height=HEIGHT, width=WIDTH)
 
 # Keep track of revealed cells, flagged cells, and if a mine was hit
 revealed = set()
@@ -199,7 +200,7 @@ while True:
         # Reset game state
         elif resetButton.collidepoint(mouse):
             game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-            ai = MinesweeperAI(height=HEIGHT, width=WIDTH)
+            ai = Agent(height=HEIGHT, width=WIDTH)
             revealed = set()
             flags = set()
             lost = False
@@ -221,6 +222,7 @@ while True:
         else:
             nearby = game.get_nearby_mines(move)
             revealed.add(move)
+            # N:B Quando creo una sentences cell deve eserre di tipo cella.
             ai.add_knowledge(move, nearby)
 
     pygame.display.flip()

@@ -49,6 +49,7 @@ class Sentence():
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
+         
         """
         # If the cell is present in self.cells, it is removed from the set. Removing the cell from the set means that it will no longer be considered in the knowledge representation of this sentence.
         # this means that one of the cells thought to be a mine was confirmed as such, so the number of unknown mines in the sentence is reduced by one.
@@ -62,7 +63,9 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
+
 '''
 # Creazione dei set di celle
 new_sentence_cells = set()
@@ -85,7 +88,7 @@ test2 = Sentence(new_sentence_cells, 3)
 # Verifica di uguaglianza
 print(str(test))
 '''
-# Esempio di celle
+'''# Esempio di celle
 cells = {Cell(0, 1), Cell(1, 1), Cell(1, 3)}
 
 # Creazione di un oggetto Sentence con count=3
@@ -98,5 +101,20 @@ sentence.mark_mine(mine_cell)
 # Output dello stato aggiornato
 print(f"Cells: {str(sentence)}")  # Questo mostrerà le celle rimanenti
 print(f"Count: {sentence.count}")  # Questo mostrerà il conteggio aggiornato delle mine
-if sentence.known_safes():
-    print("TUTTO SICURO")
+#if sentence.known_safes():
+#    print("TUTTO SICURO")
+'''
+'''# Esempio di celle
+cells = {Cell(0, 1), Cell(1, 1), Cell(1, 3)}
+
+# Creazione di un oggetto Sentence con count=3
+sentence = Sentence(cells, 3)
+
+# Marking a cell as safe
+safe_cell = Cell(1, 1)
+sentence.mark_safe(safe_cell)
+if sentence.known_mines():
+    print("Entrambi gli oggetti sono bombe")
+# Output dello stato aggiornato
+print(f"Cells: {str(sentence)}")  # Questo mostrerà le celle rimanenti
+print(f"Count: {sentence.count}")  # Questo mostrerà il conteggio delle mine, che rimane invariato'''
