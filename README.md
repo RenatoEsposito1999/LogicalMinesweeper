@@ -7,7 +7,6 @@ This project is part of the Artificial Intelligence course at the Master's Degre
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
