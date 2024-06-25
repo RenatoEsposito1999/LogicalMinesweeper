@@ -27,6 +27,22 @@ To get started with this project, follow these steps:
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/minesweeper-propositional-logic.git
+   '''
+2. Navigate to the project directory:
+   ```bash
+   cd minesweeper-propositional-logic
+   '''
+4. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   '''
+### Usage
+To run the Minesweeper game, execute the following command:
+```bash
+python minesweeper.py
+```
+The game interface will launch, and you can start playing by clicking on the cells. The AI will assist you in making logical decisions based on the propositional logic implemented in the game.
 
-   
+## License
+This project is licensed under the   Apache License. See the [LICENSE](https://github.com/RenatoEsposito1999/LogicalMinesweeper/blob/main/LICENSE) file for details.
 
