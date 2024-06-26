@@ -3,7 +3,7 @@ class Cell:
     col = None
     number = None
     has_mine = False
-    def __init__(self,row,col):
+    def __init__(self,row=None,col=None):
         self.row = row
         self.col = col
     def set_has_mine(self,value):

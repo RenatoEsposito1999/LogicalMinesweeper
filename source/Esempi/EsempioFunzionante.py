@@ -286,7 +286,7 @@ class MinesweeperAI():
                             knowledge_changed = True
                             print('New Inferred Knowledge: ', new_sentence, 'from', sentence_1, ' and ', sentence_2)
                             self.knowledge.append(new_sentence)
-
+                            
         # Print out AI current knowledge to terminal:
         print('Current AI KB length: ', len(self.knowledge))
         print('Known Mines: ', self.mines)

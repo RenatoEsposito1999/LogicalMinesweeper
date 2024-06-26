@@ -15,6 +15,7 @@ class Agent():
     mines = set()
     # KB that is a list of all of the Sentences that the Agent knows to be true
     knowledge_base = []
+
     def __init__(self, height, width):
         # Set initial height and width
         self.height = height
@@ -37,23 +38,6 @@ class Agent():
         self.safes.add(cell)
         for sentence in self.knowledge_base:
             sentence.mark_safe(cell)
-
-    def add_knowledge(self, cell, count):
-        """
-        Called when the Minesweeper field tells us, for a given
-        safe cell, how many neighboring cells have mines in them.
-
-        This function should:
-            1) mark the cell as a move that has been made
-            2) mark the cell as safe
-            3) add a new sentence to the AI's knowledge base
-               based on the value of `cell` and `count`
-            4) mark any additional cells as safe or as mines
-               if it can be concluded based on the AI's knowledge base
-            5) add any new sentences to the AI's knowledge base
-               if they can be inferred from existing knowledge
-        """
-        raise NotImplementedError
 
     def make_safe_move(self):
         """
@@ -89,12 +73,111 @@ class Agent():
                 print(f"The agent selected a movement at random: ({cell.row},{cell.col})")
                 return cell
             
-    
-test = Agent(6,6)
-test.safes.add(Cell(0,0))
-test.safes.add(Cell(1,0))
-test.safes.add(Cell(2,0))
-test.safes.add(Cell(3,0))
-test.make_safe_move()
+    def add_knowledge(self, cell, count):
+        """
+        Called when the Minesweeper field tells us, for a given
+        safe cell, how many neighboring cells have mines in them.
+        """
+        # Mark the cell as a made and safe movement
+        self.moves_made.add(cell)
+        self.mark_safe(cell)
+
+        # Add new sentence to the Agent's KB based on the value of `cell` and `count`
+        new_sentence = set()
+
+        # Loop over adjacent cells
+        for row in range(cell.row - 1, cell.row + 2):
+            for col in range(cell.col - 1, cell.col + 2):
+                adj_cell = Cell(row,col)
+                # skip the cell itself and also when adj is know to be safe
+                if (adj_cell == cell) or (adj_cell in self.safes):
+                    continue
+                
+                # if is know that is mine the var count is decreased
+                if adj_cell in self.mines:
+                    count = count - 1
+                    continue
+                
+                # within the limits of the playing field
+                # we are not sure whether adj_cell is mine or safe
+                if 0 <= row < self.height and 0 <= col < self.width:
+                    new_sentence.add(adj_cell)
+
+        # just for printing purposes
+        sentence = Sentence(new_sentence, count)
+        print(f'Move on cell: ({cell.row},{cell.col}) has added sentence to knowledge {sentence}' )
+        
+        # We add the information in the form {A,B,C,D} = count i.e. among those cells there are 'count' mines, but we don't yet know which ones they are
+        self.knowledge_base.append(sentence)
+
+        # Function to infer mines and safe cells, and  new knowledge
+
+        new_inference = True
+        while new_inference:
+            new_inference = False
+            mines = set()
+            safes = set()
+            # We collect all the cells that we know are safe and those that are mines
+            for sentence in self.knowledge_base:
+                # Returns the set of all cells in each setence known to be safes.
+                safes = safes.union(sentence.known_safes())
+                # Returns the set of all cells in each setence known to be mines.
+                mines = mines.union(sentence.known_mines())
+
+            # If there are safe cells or mines identified, update the Knowledge Base 
+            # by marking them as such and set new_inference to True to continue the loop.
+            if safes:
+                new_inference = True
+                for safe in safes:
+                    self.mark_safe(safe)
+            if mines:
+                new_inference = True
+                for mine in mines:
+                    self.mark_mine(mine)
+
+            # Remove any empty sentences from knowledge base:
+            empty = Sentence(set(), 0)
+            new_knowledge = []
+            for sentence in self.knowledge_base:
+                if sentence != empty:
+                    new_knowledge.append(sentence)
+            self.knowledge_base = new_knowledge
+
+            # Try to infer new sentences from the current ones:
+            for sentence_1 in self.knowledge_base:
+                for sentence_2 in self.knowledge_base:
+
+                    # Ignore when sentences are ==
+                    if sentence_1.cells == sentence_2.cells:
+                        continue
+
+                    if sentence_1.cells == Cell() and sentence_1.count > 0:
+                        print('Error - sentence with no cells and count created')
+                        raise ValueError
+
+                    # Create a new sentence if 1 is subset of 2, and not in KB:
+                    # ex: sentence_1: {(1, 1), (1, 2)} = 1 
+                    #     sentence_2: {(1, 1), (1, 2), (1, 3)} = 2 
+                    #     sentece_2 - sentece_1 = {(1,3)} = 1
+                    if sentence_1.cells.issubset(sentence_2.cells):
+                        new_sentence_cells = sentence_2.cells - sentence_1.cells
+                        new_sentence_count = sentence_2.count - sentence_1.count
+
+                        new_sentence = Sentence(new_sentence_cells, new_sentence_count)
+
+                        # Add to knowledge if not already in KB:
+                        if new_sentence not in self.knowledge_base:
+                            new_inference = True
+                            print('New Inferred Knowledge: ', new_sentence, 'from', sentence_1, ' and ', sentence_2)
+                            self.knowledge_base.append(new_sentence)
 
 
+
+
+        # Print out AI current knowledge to terminal:
+        print('Current AI KB length: ',len(self.knowledge_base))
+        mines = Sentence(self.mines,len(self.mines))
+        print('Known Mines: ', mines)
+        remaining = Sentence(self.safes-self.moves_made,len(self.safes-self.moves_made))
+        print('Safe Moves Remaining: ', remaining)
+        print('====================================================')

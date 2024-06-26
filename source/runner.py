@@ -34,6 +34,8 @@ board_width = ((2 / 3) * width) - (BOARD_PADDING * 2)
 board_height = height - (BOARD_PADDING * 2)
 cell_size = int(min(board_width / WIDTH, board_height / HEIGHT))
 board_origin = (BOARD_PADDING, BOARD_PADDING)
+#Flag for rules
+flag_rules = True
 
 # Add images
 flag = pygame.image.load("assets/images/flag.png")
@@ -61,27 +63,15 @@ while True:
             sys.exit()
 
     screen.fill(BLACK)
-
+    
     # Show game instructions
     if instructions:
-
+        
         # Title
         title = largeFont.render("Play Minesweeper", True, WHITE)
         titleRect = title.get_rect()
         titleRect.center = ((width / 2), 50)
         screen.blit(title, titleRect)
-
-        # Rules
-        rules = [
-            "Click a cell to reveal it.",
-            "Right-click a cell to mark it as a mine.",
-            "Mark all mines successfully to win!"
-        ]
-        for i, rule in enumerate(rules):
-            line = smallFont.render(rule, True, WHITE)
-            lineRect = line.get_rect()
-            lineRect.center = ((width / 2), 150 + 30 * i)
-            screen.blit(line, lineRect)
 
         # Play game button
         buttonRect = pygame.Rect((width / 4), (3 / 4) * height, width / 2, 50)
@@ -99,9 +89,22 @@ while True:
                 instructions = False
                 time.sleep(0.3)
 
+        # Rules
+        rules = [
+        "Click a cell to reveal it.",
+        "Click on 'Next move' to allow the agent to move",
+        "Right-click a cell to mark it as a mine.",
+        "Mark all mines successfully to win!"
+    ]
+        for i, rule in enumerate(rules):
+            line = smallFont.render(rule, True, WHITE)
+            lineRect = line.get_rect()
+            lineRect.center = ((width / 2), 150 + 30 * i)
+            screen.blit(line, lineRect)
+
         pygame.display.flip()
         continue
-
+    
     # Draw board
     cells = []
     for i in range(HEIGHT):
@@ -156,6 +159,7 @@ while True:
     buttonRect.center = resetButton.center
     pygame.draw.rect(screen, WHITE, resetButton)
     screen.blit(buttonText, buttonRect)
+   
 
     # Display text
     text = "Lost" if lost else "Won" if game.mines == flags else ""
