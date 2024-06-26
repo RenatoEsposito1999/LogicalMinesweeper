@@ -31,6 +31,14 @@ class Minesweeper():
         
         # Added the number of nearby mines.
         self.compute_nearby_mines()
+        self.print()
+
+    def get_cell_from_field(self,cell):
+        for i in range(self.height):
+            for j in range(self.width):
+                if self.field[i][j] == cell:
+                    return self.field[i][j]
+        return None
 
     def print(self):
         for i in range(self.height):
@@ -42,13 +50,13 @@ class Minesweeper():
                     print(f"|{self.field[i][j].get_number()}", end="")
             print("|")
         print("--" * self.width + "-")
-        print("Mines are in:")
+        string = "Mines are in: "
         for cell in self.mines:
-            print(f"({cell.get_row()},{cell.get_col()})")
+            string+=f"({cell.get_row()},{cell.get_col()})"
+        print(string)
 
     def is_mine(self,cell):
-        i, j = cell
-        return self.field[i][j].get_has_mine()
+        return self.get_cell_from_field(cell).get_has_mine()
 
     def compute_nearby_mines(self):
         # Keep count of nearby mines
@@ -57,7 +65,6 @@ class Minesweeper():
             (0, -1),         (0, 1),
             (1, -1), (1, 0), (1, 1)
         ]
-
         for row in range(len(self.field)):
             for col in range(len(self.field[0])):
                 if self.field[row][col].get_has_mine():
@@ -68,15 +75,15 @@ class Minesweeper():
                     if 0 <= r < len(self.field) and 0 <= c < len(self.field[0]):
                         if self.field[r][c].get_has_mine():
                             mine_count += 1
+                print(mine_count)
                 self.field[row][col].set_number(mine_count)
 
     def get_nearby_mines(self, cell):
-        #Returns the number of nearby mines of a given cell --> (row,col)
-        i,j = cell
-        return self.field[i][j].get_number()
+        '''Returns the number of nearby mines of a given cell'''
+        return self.get_cell_from_field(cell).number
 
     def won(self):
         #Checks if all mines have been flagged.
         return self.mines_found == self.mines
-
-#test = Minesweeper(6,6,6)
+    
+    

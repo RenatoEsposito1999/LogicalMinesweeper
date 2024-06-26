@@ -1,6 +1,7 @@
 #https://cs50.harvard.edu/extension/ai/2020/spring/projects/1/minesweeper/#:~:text=Propositional%20Logic&text=One%20way%20we%20could%20represent,a%20mine%2C%20and%20false%20otherwise.
 from random import randrange
 import random
+import time
 from cell import Cell
 from sentence import Sentence
 class Agent():
@@ -59,7 +60,7 @@ class Agent():
         """
         # Space left on the field
         spaces_left = (self.height * self.width) - (len(self.moves_made) + len(self.mines))
-
+        
         # If no spaces return None = no movement possible
         if spaces_left == 0:
             return None
@@ -70,7 +71,6 @@ class Agent():
             cell = Cell(i,j)
             # have not already been chosen and are not known to be mines
             if (cell not in self.moves_made) and (cell not in self.mines):
-                print(f"The agent selected a movement at random: ({cell.row},{cell.col})")
                 return cell
             
     def add_knowledge(self, cell, count):
@@ -79,9 +79,11 @@ class Agent():
         safe cell, how many neighboring cells have mines in them.
         """
         # Mark the cell as a made and safe movement
+        print("[START] ADD_KNOWLEDGE FUNCTION")
+        print("Aggiungo il movimento alla lista dei movimenti fatti e lo fleggo come safe")
         self.moves_made.add(cell)
         self.mark_safe(cell)
-
+        #time.sleep(2)
         # Add new sentence to the Agent's KB based on the value of `cell` and `count`
         new_sentence = set()
 
@@ -95,23 +97,26 @@ class Agent():
                 
                 # if is know that is mine the var count is decreased
                 if adj_cell in self.mines:
+                    print("So già che uno di questi è una mina quindi decremento il counter")
+                    #time.sleep(2)
                     count = count - 1
                     continue
                 
                 # within the limits of the playing field
                 # we are not sure whether adj_cell is mine or safe
                 if 0 <= row < self.height and 0 <= col < self.width:
+                    print("Non ho certezze sulla cella ",row,col," quindi diventano una nuova frase da aggiungere:")
+                    #time.sleep(2)
                     new_sentence.add(adj_cell)
 
         # just for printing purposes
         sentence = Sentence(new_sentence, count)
-        print(f'Move on cell: ({cell.row},{cell.col}) has added sentence to knowledge {sentence}' )
+        print(f'The moving on cell: ({cell.row},{cell.col}) has added sentence = {sentence} to knowledge base' )
         
         # We add the information in the form {A,B,C,D} = count i.e. among those cells there are 'count' mines, but we don't yet know which ones they are
         self.knowledge_base.append(sentence)
-
         # Function to infer mines and safe cells, and  new knowledge
-
+        print("Inizia il processo di inferenza perché abbiamo scoperto cose nuove")
         new_inference = True
         while new_inference:
             new_inference = False
@@ -171,9 +176,7 @@ class Agent():
                             print('New Inferred Knowledge: ', new_sentence, 'from', sentence_1, ' and ', sentence_2)
                             self.knowledge_base.append(new_sentence)
 
-
-
-
+        print("[END] KNOWLEDG FUNCTION")
         # Print out AI current knowledge to terminal:
         print('Current AI KB length: ',len(self.knowledge_base))
         mines = Sentence(self.mines,len(self.mines))
