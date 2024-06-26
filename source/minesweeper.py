@@ -75,7 +75,6 @@ class Minesweeper():
                     if 0 <= r < len(self.field) and 0 <= c < len(self.field[0]):
                         if self.field[r][c].get_has_mine():
                             mine_count += 1
-                print(mine_count)
                 self.field[row][col].set_number(mine_count)
 
     def get_nearby_mines(self, cell):
