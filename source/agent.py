@@ -1,92 +1,94 @@
 import re
 from knowledge import KnowledgeBase
-class Agent():
+from random import randrange
+class Agent:
+    def __init__(self, height, width):
+        print("INIZIO -------------------------------------------------------------------------------------------------------------")
+        self.height = height
+        self.width = width
+        self.knowledge_base = KnowledgeBase(height, width)
+        self.safe_movements = set()
+        self.moves_made = set()
+        self.mines = set()
 
-    def __init__(self) -> None:
-        self.knowledge_base = KnowledgeBase()
-    
-    '''
-        Questa versione di update_kb non è completamente iterativa. Dovrebbe essere migliorata per assicurarsi che 
-        tutte le possibili nuove informazioni vengano trovate iterativamente, 
-        poiché alcune nuove proposizioni possono attivare ulteriori regole che a loro volta possono generare ancora più nuove proposizioni.
-    '''
-
-    '''def update_kb(self):
-        new_propositions = set()
-        for rule in self.knowledge_base.rules:
-            premise, conclusion = rule.split(' -> ')
-            if all(p in self.knowledge_base.propositions for p in premise.split(' AND ')):
-                conclusions = conclusion.split(' AND ')
-                new_propositions.update(conclusions)
-        self.knowledge_base.propositions.update(new_propositions)'''
-    '''Qui l'agente sa solamente ritornare quello che trova in i j n e k(se c'è)'''
-
-    ''' Questa versione è migliore di prima, perché qui 
-        Inizializzazione: La KB viene inizializzata con le proposizioni conosciute.
-        Ciclo Iterativo: Nel metodo update_kb, un ciclo while True continua finché ci sono nuove proposizioni da aggiungere.
-        Applicazione delle Regole: Per ogni regola, se le premesse della regola sono soddisfatte dalle proposizioni attuali nella KB, le conclusioni della regola vengono aggiunte a un set di nuove proposizioni.
-        Aggiornamento delle Proposizioni: Se non ci sono nuove proposizioni da aggiungere (added_propositions è vuoto), il ciclo si interrompe. Altrimenti, le nuove proposizioni vengono aggiunte alla KB e il ciclo continua.
-        Conclusione: Quando il ciclo termina, tutte le possibili inferenze sono state aggiunte alla KB.
-        '''
-    
     def update_kb(self):
-        new_propositions = set(self.knowledge_base.propositions)
         while True:
-            added_propositions = set()
+            new_propositions = set()
             for rule in self.knowledge_base.rules:
                 premise, conclusion = rule.split(' -> ')
-                if all(p in new_propositions for p in premise.split(' AND ')):
-                    conclusions = conclusion.split(' AND ')
+                premise = [p.strip() for p in premise.split(' AND ')]
+                if all(p in self.knowledge_base.propositions for p in premise):
+                    conclusions = [c.strip().strip('()') for c in conclusion.split(' AND ')]
                     for concl in conclusions:
-                        if concl not in new_propositions:
-                            added_propositions.add(concl)
-            if not added_propositions:
+                        if concl not in self.knowledge_base.propositions:
+                            new_propositions.add(concl)
+            if not new_propositions:
                 break
-            new_propositions.update(added_propositions)
-        self.knowledge_base.propositions = new_propositions
+            self.knowledge_base.propositions.update(new_propositions)
     
-
-    def add_proposition(self, proposition):
+    def add_proposition(self, row, col, count):
+        if count == 0:
+            proposition = f"S_{row}_{col}"
+        else:
+            proposition = f"N_{row}_{col}_{count}"
+        print("Aggiungo la proposizione: ", proposition)
         self.knowledge_base.add_proposition(proposition)
+        self.moves_made.add((row,col))
         self.update_kb()
 
-    def estrai_valori_da_stringa(s):
-        # Definisci un pattern regex per cercare il formato N_{i}_{j}_{k}
-        pattern = r"N_(\d+)_(\d+)(?:_(\d+))?"
-        
-        # Cerca il pattern nella stringa di input
+        '''# Update safe_movements and mines based on the updated knowledge base
+        for prop in self.knowledge_base.propositions:
+            if prop.startswith("S_"):
+                _, i, j = prop.split('_')
+                self.safe_movements.add((int(i), int(j)))
+            elif prop.startswith("B_"):
+                _, i, j = prop.split('_')
+                self.mines.add((int(i), int(j)))'''
+    
+    def make_safe_move(self):
+        if self.safe_movements:
+            for movement in self.safe_movements:
+                if movement not in self.moves_made:
+                    self.moves_made.add(movement)
+                    self.safe_movements.remove(movement)
+                    return movement
+        return None, None
+
+    def make_random_move(self):
+        spaces_left = (self.height * self.width) - (len(self.moves_made) + len(self.mines))
+        if spaces_left == 0:
+            return None
+        while True:
+            i = randrange(self.height)
+            j = randrange(self.width)
+            if (i, j) not in self.moves_made and (i, j) not in self.mines:
+                return i, j
+
+    def get_value_from_string(self, s):
+        pattern = r"[NS]_(\d+)_(\d+)(?:_(\d+))?"
         match = re.search(pattern, s)
-        
         if match:
-            # Estrai i valori dai gruppi corrispondenti
-            N = int(match.group(1))
-            i = int(match.group(2))
+            N_or_S = match.group(0)[0]
+            i = int(match.group(1))
+            j = int(match.group(2))
             k = int(match.group(3)) if match.group(3) else None
-            return N, i, k
+            return N_or_S, i, j, k
         else:
             return None
 
-    '''# Esempio di utilizzo
-    stringa_input = "N_42_10"
-    risultato = estrai_valori_da_stringa(stringa_input)
-    if risultato:
-        N, i, k = risultato
-        print(f"N: {N}, i: {i}, k: {k if k is not None else 'non presente'}")
-    else:
-        print("Pattern non trovato nella stringa di input.")'''
-agent = Agent()
-print("REGOLE")
+'''# Test dell'agente e della KB
+agent = Agent(6, 6)
+print("REGOLE:")
 for rule in agent.knowledge_base.rules[:5]:
     print(rule)
 print("----------------------------")
-print("Supponendo che l'utente clicca sulla cella 0,0 e trova il numero 0 allora scopre:")
-agent.add_proposition("N_0_0_0")
-print(len(agent.knowledge_base.propositions))
-for rule in agent.knowledge_base.propositions:
-    print(rule)
+print("Supponendo che l'utente clicca sulla cella (0,0) e trova il numero 0:")
+agent.add_proposition(0, 0, 0)
+for prop in agent.knowledge_base.propositions:
+    print(prop)
 print("-----------------------------------------------------")
-agent.add_proposition("N_1_1_2")
-print(len(agent.knowledge_base.propositions))
-for rule in agent.knowledge_base.propositions:
-    print(rule)
-
+print("Supponendo che l'utente clicca sulla cella (1,1) e trova il numero 2:")
+agent.add_proposition(1, 1, 2)
+for prop in agent.knowledge_base.propositions:
+    print(prop)
+'''
