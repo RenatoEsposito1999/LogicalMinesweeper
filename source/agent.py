@@ -69,6 +69,11 @@ class Agent:
             for j in range(col-1, col+2):
                 if (0 <= i < self.height) and (0 <= j < self.width) and (i != row or j != col):
                     # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.
+                    if pl_fc_entails(self.knowledge_base,expr(f'S_{i}_{j}')):
+                        print(f'S_{i}_{j} è safe')
+                    else:
+                        print(f'S_{i}_{j} non safe')
+                    # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.
                     # per ogni vicino posso inferire che è una bomba? aggiungilo alla lista bombe.
                     # per ogni vicino posso inferire che ha un numero? Aggiungo alla lista dei numeri.
                     # N.B: Fare attenzione al fatto che se è safe potrebbe essere anche nella N_ _ _
