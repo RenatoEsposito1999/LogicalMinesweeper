@@ -60,8 +60,7 @@ class Agent:
         #print("Clausola inserità nella: ",clauses)
         #processo di inferenza: possiamo inferire qualcosa dai vicini? Se si li aggiungiamo alle varie liste.
         self.inference(row,col)
-        self.moves_made.add((row,col))
-        self.print(title='[Agent] new informations after inference process')
+        #self.print(title='[Agent] new informations after inference process')
 
     def inference(self,row,col):
         for i in range(row-1, row+2):
@@ -79,6 +78,10 @@ class Agent:
                     # per ogni vicino posso inferire che è una bomba? aggiungilo alla lista bombe.
                     # per ogni vicino posso inferire che ha un numero? Aggiungo alla lista dei numeri.
                     # N.B: Fare attenzione al fatto che se è safe potrebbe essere anche nella N_ _ _
+                
+                # alla fine del processo agigungiamo il movimento come fatto
+                self.moves_made.add((row,col))
+
 
 
 
@@ -103,6 +106,7 @@ class Agent:
         else:
             return (None,None)
 
+# ragionare se posso usareconcetti di provabilità per selezionare elementi con una probabilità minore.
     def make_random_move(self):
         spaces_left = (self.height * self.width) - (len(self.moves_made) + len(self.mines)) #no space. 
         if spaces_left == 0:
