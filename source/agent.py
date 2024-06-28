@@ -23,6 +23,7 @@ class Agent:
         # add rules to kb
         self.build_kb()
 
+
     def generate_clauses(self):
         for i in range(self.height):
             for j in range(self.width):
@@ -52,47 +53,54 @@ class Agent:
         # N.B: quando arrivano delle coordinate so per certo che queste non sono bombe perché altrimenti il gioco non 
         # avrebbe mai raggiunto questa porzione di codice ma sarebbe semplicemente terminato il gioco.
 
-        # fa il movimento e lo aggiungo al set dei movimenti fatti
-        self.moves_made.add((row,col))
         # devo creare l'espressione per cui fare la tell
-        clauses = self.build_expression(row,col,nearby)
+        #clauses = self.build_expression(row,col,nearby)
         # aggiungo la clausesola alla kb
-        self.knowledge_base.tell(expr(clauses))
-        
+        self.knowledge_base.tell(expr(f'N_{row}_{col}_{nearby}'))
+        #print("Clausola inserità nella: ",clauses)
         #processo di inferenza: possiamo inferire qualcosa dai vicini? Se si li aggiungiamo alle varie liste.
         self.inference(row,col)
-
+        self.moves_made.add((row,col))
+        self.print(title='[Agent] new informations after inference process')
 
     def inference(self,row,col):
-        neighbors = []
         for i in range(row-1, row+2):
             for j in range(col-1, col+2):
-                if (0 <= i < self.height) and (0 <= j < self.width) and (i != row or j != col):
-                    # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.
+                # se il vicino è nel campo (quindi è valido) e non è già stato selezionato come movimento fatto o se non si hanno già informazioni
+                if (0 <= i < self.height) and (0 <= j < self.width) and (i != row or j != col) and ((i,j) not in self.moves_made) and ((i,j) not in self.safe_movements) and ((i,j) not in self.mines):
+                    ''' # se il vicino non è ancora stato scoperto:
+                    if ((i,j) not in self.moves_made):'''
+                    # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.'
                     if pl_fc_entails(self.knowledge_base,expr(f'S_{i}_{j}')):
-                        print(f'S_{i}_{j} è safe')
-                    else:
-                        print(f'S_{i}_{j} non safe')
-                    # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.
+                        #print("ora aggiungo ", (i,j))
+                        self.safe_movements.add((i,j))
+                    #else:
+                        #print(f'S_{i}_{j} non safe')
                     # per ogni vicino posso inferire che è una bomba? aggiungilo alla lista bombe.
                     # per ogni vicino posso inferire che ha un numero? Aggiungo alla lista dei numeri.
                     # N.B: Fare attenzione al fatto che se è safe potrebbe essere anche nella N_ _ _
-                    pass
+
+
+
         
-    def build_expression(self,row,col,nearby):
+    '''def build_expression(self,row,col,nearby):
         # N.B: quando arrivano delle coordinate so per certo che queste non sono bombe perché altrimenti il gioco non 
         # avrebbe mai raggiunto questa porzione di codice ma sarebbe semplicemente terminato il gioco.
-        if nearby:
-            return f'N_{row}_{col}_{nearby}'
-        else:
-            return f'S_{row}_{col}'
+        #if nearby:
+        #return f'N_{row}_{col}_{nearby}'
+        #else:
+        #eturn f'S_{row}_{col}'
+        pass'''
 
     def make_safe_move(self):
         # Deve generare un movimento non fatto che la KB sa che è safe o che contiene un numero.
-        if self.safe_movements:
-            print("C'è un movimento sicuro da fare")
+        if self.safe_movements: # Se ci sono movimenti sicuri
+            for mov in self.safe_movements: # per ogni movimento
+                if mov not in self.moves_made: # prendo il primo che non è stato già fatto
+                    self.moves_made.add(mov)
+                    self.safe_movements.remove(mov)
+                    return mov
         else:
-            print("Return none")
             return (None,None)
 
     def make_random_move(self):
@@ -103,6 +111,8 @@ class Agent:
             i = randrange(self.height)
             j = randrange(self.width)
             if (i, j) not in (self.moves_made) and ((i, j) not in self.mines):
+                # fa il movimento e lo aggiungo al set dei movimenti fatti
+                self.moves_made.add((i,j))
                 return i, j
 
     def build_kb(self):
@@ -121,3 +131,23 @@ class Agent:
         else:
             return None
         
+
+    def print(self,title):
+        print(title)
+        print("[Agent]: Safe movements:")
+        string = ""
+        for mov in self.safe_movements:
+            if mov not in self.moves_made:
+                string+=f'{mov} '
+        print(string)
+        print("[Agent]: Knowed mines:")
+        string = ""
+        for mov in self.mines:
+            string+=f'{mov} '
+        print(string)
+        print("[Agent]: Movements already made:")
+        string = ""
+        for mov in self.moves_made:
+            string+=f'{mov} '
+        print(string)
+        print("-------------------------------------------------------------------")
