@@ -1,12 +1,11 @@
 import pygame
 import sys
 import time
-
-# from minesweeper import Minesweeper, MinesweeperAI
-#from source.Esempi.EsempioFunzionante import Minesweeper, MinesweeperAI
 from cell import Cell
 from minesweeper import Minesweeper
 from agent import Agent
+
+
 
 HEIGHT = 6
 WIDTH = 6
@@ -240,5 +239,6 @@ while True:
             else:
                 print("[ERROR]: No cell corresponds to the chosen movement")'''
             revealed.add(move)
+
             ai.add_knowledge(move.row,move.col,nearby)
     pygame.display.flip()

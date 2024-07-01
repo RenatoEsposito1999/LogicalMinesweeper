@@ -3,6 +3,7 @@ class Cell:
     col = None
     number = None
     has_mine = False
+    unknow = True
     def __init__(self,row=None,col=None):
         self.row = row
         self.col = col

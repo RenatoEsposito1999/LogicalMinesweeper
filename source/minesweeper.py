@@ -41,6 +41,10 @@ class Minesweeper():
         return None
 
     def print(self):
+        string = "Mines are in: "
+        for cell in self.mines:
+            string+=f"({cell.get_row()},{cell.get_col()})"
+        print(string)
         for i in range(self.height):
             print("--" * self.width + "-")
             for j in range(self.width):
@@ -50,10 +54,7 @@ class Minesweeper():
                     print(f"|{self.field[i][j].get_number()}", end="")
             print("|")
         print("--" * self.width + "-")
-        string = "Mines are in: "
-        for cell in self.mines:
-            string+=f"({cell.get_row()},{cell.get_col()})"
-        print(string)
+        
 
     def is_mine(self,cell):
         return self.get_cell_from_field(cell).get_has_mine()
