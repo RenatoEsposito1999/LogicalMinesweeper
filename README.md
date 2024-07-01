@@ -1,6 +1,6 @@
 # Minesweeper with Propositional Logic
 
-This project is part of the Artificial Intelligence course at the Master's Degree program in Applied Computer Science (Machine Learning and Big Data) at Parthenope University of Naples. This project uses the logic implementation made from the book [Artificial Intelligence: A Modern Approach](https://aima.cs.berkeley.edu/), the source code is available [here](https://github.com/aimacode/aima-python), but it is also present in the current repository.\n
+This project is part of the Artificial Intelligence course at the Master's Degree program in Applied Computer Science (Machine Learning and Big Data) at Parthenope University of Naples. This project uses the logic implementation made from the book [Artificial Intelligence: A Modern Approach](https://aima.cs.berkeley.edu/), the source code is available [here](https://github.com/aimacode/aima-python), but it is also present in the current repository. <br>
 The graphical interface was taken ready-made from [this](https://cdn.cs50.net/ai/2020/spring/projects/1/minesweeper.zip) repository, but has been minimally modified.
 
 
