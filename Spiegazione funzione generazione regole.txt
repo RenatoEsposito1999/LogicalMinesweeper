@@ -1,0 +1,44 @@
+
+
+Spiegazione dello Script
+Lo scopo dello script è generare clausole logiche per il gioco del campo minato. Le clausole rappresentano le regole del gioco, ovvero le relazioni tra le celle e le mine vicine. Ogni cella può avere 0, 1, 2, ..., n mine nelle celle adiacenti.
+
+Struttura delle Clausole
+Identificazione dei vicini:
+
+python
+Copia codice
+neighbors = [
+    (i-1, j-1), (i-1, j), (i-1, j+1),
+    (i, j-1),           (i, j+1),
+    (i+1, j-1), (i+1, j), (i+1, j+1)
+]
+neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
+Per ogni cella (i, j), viene creata una lista delle coordinate dei suoi vicini. Vengono poi filtrati i vicini che si trovano effettivamente all'interno della griglia di gioco.
+
+Clausole per N_ij_0:
+
+python
+Copia codice
+for (x, y) in neighbors:
+    self.clauses.append(f"N_{i}_{j}_0 ==> S_{x}_{y}")
+Se una cella (i, j) ha zero mine nei suoi vicini (N_{i}_{j}_0), allora tutte le celle vicine devono essere sicure (S_{x}_{y}).
+
+Clausole per N_ij_k (k > 0):
+
+python
+Copia codice
+for k in range(1, num_neighbors + 1):
+    for subset in combinations(neighbors, k):
+        condition = " & ".join([f"B_{x}_{y}" for (x, y) in subset])
+        safe_neighbors = [f"S_{x}_{y}" for (x, y) in neighbors if (x, y) not in subset]
+        for safe_neighbor in safe_neighbors:
+            self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> {safe_neighbor}")
+        for mine in subset:
+            self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> B_{mine[0]}_{mine[1]}")
+Se una cella (i, j) ha k mine nei suoi vicini (N_{i}_{j}_k), allora:
+
+Viene generata ogni combinazione possibile di k vicini che potrebbero contenere una mina.
+La condizione (condition) rappresenta queste k celle come contenenti mine.
+Per ogni cella che non è tra quelle k, si aggiunge una clausola che dice che se N_{i}_{j}_k è vero e la condizione delle k mine è vera, allora la cella è sicura (S_{x}_{y}).
+Per ogni cella nelle k mine, si aggiunge una clausola che dice che se N_{i}_{j}_k è vero e la condizione delle k mine è vera, allora queste celle contengono una mina (B_{mine[0]}_{mine[1]}).

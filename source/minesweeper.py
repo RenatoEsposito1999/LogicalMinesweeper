@@ -41,10 +41,10 @@ class Minesweeper():
         return None
 
     def print(self):
-        string = "Mines are in: "
+        self.string = "Mines are in: "
         for cell in self.mines:
-            string+=f"({cell.get_row()},{cell.get_col()})"
-        print(string)
+            self.string+=f"({cell.get_row()},{cell.get_col()})"
+        print(self.string)
         for i in range(self.height):
             print("--" * self.width + "-")
             for j in range(self.width):
