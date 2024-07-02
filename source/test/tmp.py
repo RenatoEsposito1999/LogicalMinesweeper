@@ -1,12 +1,10 @@
-'''
-VERIFICARE CHE LE REGOLE DELLE BOMBE SIANO SENSATE, PROBABILEMNTE DEVO APPLIKCARE L'INFERENZA PER OGNI CELLA CHE CONOSCO. 
-'''
+# PRIMA DI FARE LE MODIFICHE AI SIMBOLI
 from random import randrange
 import re
 from library.utils import *
 from library.logic import *
 from itertools import combinations
-from cell import Cell
+
 class Agent:
     knowledge_base = PropDefiniteKB()
     height = None
@@ -19,58 +17,103 @@ class Agent:
     moves_made = set()
     # Movimenti sicuri, cioè con numero zero
     safe_movements = set()
-    game = None # Minesweeper class object
-    
-    def __init__(self,height,width,n_mines, game) -> None:
+    # movimenti sicuri, ma con numeri
+    safe_movements_with_number = set()
+
+    def __init__(self,height,width,n_mines) -> None:
         self.height = height
         self.width = width
         self.n_mines = n_mines
-        self.game = game
         # build definite clauses
         self.generate_clauses()
         # add rules to kb
         self.build_kb()
         print("Initial KB's len: ",len(self.knowledge_base.clauses))
-        for rule in self.knowledge_base.clauses[:10]:
+        for rule in self.knowledge_base.clauses[100:150]:
             print(rule)
-        print(len(self.clauses))
+
+
+
 
     def generate_clauses(self):
-        for row in range(self.height):
-            for col in range(self.width):
+        for i in range(self.height):
+            for j in range(self.width):
                 neighbors = [
-                    (row-1, col-1), (row-1, col), (row-1, col+1),
-                    (row, col-1),             (row, col+1),
-                    (row+1, col-1), (row+1, col), (row+1, col+1)
+                    (i-1, j-1), (i-1, j), (i-1, j+1),
+                    (i, j-1),       (i, j+1),
+                    (i+1, j-1), (i+1, j), (i+1, j+1)
                 ]
-                # Filtra i vicini validi che non escono dai bordi del campo
                 neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
                 num_neighbors = len(neighbors)
-                # Rules for mines
-                # Genera clausole per ogni possibile numero di bombe (da 1 a num_neighbors)
+
+                # Regole per N_i_j_0
+                self.clauses.append(f"N_{i}_{j}_0 ==> S_{i}_{j}")
+                for (x, y) in neighbors:
+                    self.clauses.append(f"N_{i}_{j}_0 ==> S_{x}_{y}")
+                    
+                # Regole per N_i_j_k (k > 0)
                 for k in range(1, num_neighbors + 1):
-                    for bomb_comb in combinations(neighbors, k):
-                        non_bomb_neighbors = [n for n in neighbors if n not in bomb_comb]
-                        if len(non_bomb_neighbors) == num_neighbors - k:
-                            premise_parts = [f"N_{row}_{col}_{k}"]
-                            # Aggiungi condizioni per i vicini che non sono bombe
-                            if non_bomb_neighbors:
-                                premise_parts.extend([f"N_{nx}_{ny}_0" for (nx, ny) in non_bomb_neighbors])
-                            # Aggiungi la conseguenza per ogni bomba individuata
-                            for (bx, by) in bomb_comb:
-                                self.clauses.append(f"{' & '.join(premise_parts)} ==> B_{bx}_{by}")
+                    for subset in combinations(neighbors, k):
+                        condition = " & ".join([f"B_{x}_{y}" for (x, y) in subset])
+                        safe_neighbors = [f"S_{x}_{y}" for (x, y) in neighbors if (x, y) not in subset]
+                        for safe_neighbor in safe_neighbors:
+                            self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> {safe_neighbor}")
+                        for mine in subset:
+                            self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> B_{mine[0]}_{mine[1]}")
+                # Regole per bomba
+                for k in range(1, len(neighbors) + 1):
+                    condition = " & ".join([f'S_{x}_{y}' for (x, y) in neighbors])
+                    self.clauses.append(f'N_{i}_{j}_{k} & {condition} ==> B_{i}_{j}')
+
+        '''for k in range(1, num_neighbors + 1):
+                    condition = " & ".join([f'~S_{x}_{y}' for (x, y) in neighbors])
+                    self.knowledge_base.append(expr(f'N_{i}_{j}_{k}') & expr(condition) >> expr(f'B_{i}_{j}'))'''
+        '''for i in range(self.height):
+            for j in range(self.width):
+                neighbors = [
+                    (i-1, j-1), (i-1, j), (i-1, j+1),
+                    (i, j-1),           (i, j+1),
+                    (i+1, j-1), (i+1, j), (i+1, j+1)
+                ]
+                neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
+                num_neighbors = len(neighbors)
+
+                # Regole per N_i_j_0
+                for (x, y) in neighbors:
+                    self.clauses.append(expr(f'N_{i}_{j}_0') >> expr(f'S_{x}_{y}'))
+
+                # Regole per N_i_j_k (k > 0)
+                for k in range(1, num_neighbors + 1):
+                    for subset in combinations(neighbors, k):
+                        condition = expr(" & ".join([f'B_{x}_{y}' for (x, y) in subset]))
+                        safe_neighbors = [expr(f'S_{x}_{y}') for (x, y) in neighbors if (x, y) not in subset]
+                        for safe_neighbor in safe_neighbors:
+                            self.clauses.append(expr(f'N_{i}_{j}_{k}') & condition >> safe_neighbor)
+                        for mine in subset:
+                            self.clauses.append(expr(f'N_{i}_{j}_{k}') & condition >> expr(f'B_{mine[0]}_{mine[1]}'))
+
+                # Regole per identificare mine certe
+                for k in range(1, num_neighbors + 1):
+                    condition = " & ".join([f'~S_{x}_{y}' for (x, y) in neighbors])
+                    self.clauses.append(expr(f'N_{i}_{j}_{k}') & expr(condition) >> expr(f'B_{i}_{j}'))
+        '''
+
+
+
+
 
     def add_knowledge(self,row,col,nearby):
         # N.B: quando arrivano delle coordinate so per certo che queste non sono bombe perché altrimenti il gioco non 
         # avrebbe mai raggiunto questa porzione di codice ma sarebbe semplicemente terminato il gioco.
 
+        # devo creare l'espressione per cui fare la tell
+        #clauses = self.build_expression(row,col,nearby)
+        # aggiungo la clausesola alla kb
         print("Lunghezza della kb prima dell'inferenza ",len(self.knowledge_base.clauses))
-        # aggiungo l'informazione alla kb se non c'è già
-        if expr(f'N_{row}_{col}_{nearby}') not in self.knowledge_base.clauses:
-            self.knowledge_base.tell(expr(f'N_{row}_{col}_{nearby}'))
+        self.knowledge_base.tell(expr(f'N_{row}_{col}_{nearby}'))
         #print("Clausola inserità nella: ",clauses)
         #processo di inferenza: possiamo inferire qualcosa dai vicini? Se si li aggiungiamo alle varie liste.
-        self.inference(row,col,nearby)
+        self.inference(row,col)
         self.print(title='[Agent] new informations after inference process')
 
     '''def inference(self,row,col):
@@ -93,40 +136,31 @@ class Agent:
                 # alla fine del processo agigungiamo il movimento come fatto
                 self.moves_made.add((row,col))
     '''
-
-    def get_valid_neighbors(self,row,col):
+    
+    def inference(self,row,col):
         neighbors = [
                     (row-1, col-1), (row-1, col), (row-1, col+1),
                     (row, col-1),             (row, col+1),
                     (row+1, col-1), (row+1, col), (row+1, col+1)
                 ]
         neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
-        return neighbors
-    
-    def inference(self,row,col,nearby):
-        
-        neighbors = self.get_valid_neighbors(row,col)
         num_neighbors = len(neighbors)
+
         for (i, j) in neighbors:
-            # se non ho informazioni su i,j cioè se non è un movimenti già fatto, o se so che non è una mina, ne che è un movimento sicuro 
-            if (i, j) not in self.moves_made and (i, j) not in self.safe_movements and (i, j) not in self.mines:
-                if nearby == 0:
-                    '''
-                    Se dovessi codificare in logica proposizionale anche le informazioni dei safe andrei a creare una quantità enorme di regole che complicherebbero le regole
-                    per trovare le bombe, poichè queste regole rappresentano tutte le possibili combiniziazioni per cui il numero di regole cresce in maniera esponenziale
-                    rispetto al numero di simboli. Possiamo vederlo come un trade-off.
-                    '''
-                    # se ho 0 vuol dire che i miei vicini sono sicuri.
-                    self.safe_movements.add((i,j))
-                    new_nearby = self.game.get_nearby_mines(Cell(i,j))
-                    self.knowledge_base.tell(expr(f'N_{i}_{j}_{new_nearby}'))
-                    self.inference(i, j, new_nearby)
-                else: #nearby > 0
-                    if pl_fc_entails(self.knowledge_base,expr(f'B_{i}_{j}')):
-                        print(f'B_{i}_{j} è una bomba')
-                        self.mines.add((i,j))
-                        self.knowledge_base.tell(expr(f'B_{i}_{j}'))
-                
+            if (i != row or j != col) and ((i, j) not in self.moves_made) and ((i, j) not in self.safe_movements) and ((i, j) not in self.mines):
+                if pl_fc_entails(self.knowledge_base, expr(f'S_{i}_{j}')):
+                    self.safe_movements.add((i, j))
+                    self.knowledge_base.tell(expr(f'S_{i}_{j}'))
+                if pl_fc_entails(self.knowledge_base, expr(f'B_{i}_{j}')):
+                    print("E' una bomba")
+                    self.knowledge_base.tell(expr(f'B_{i}_{j}'))
+                    self.mines.add((i, j))
+                '''if self.bc(self.knowledge_base,expr(f'S_{i}_{j}')):
+                    self.safe_movements.add((i, j))
+                    self.knowledge_base.tell(expr(f'S_{i}_{j}'))'''
+
+        #return None 
+
 
 
     def make_safe_move(self):
@@ -136,6 +170,12 @@ class Agent:
                 if mov not in self.moves_made: # prendo il primo che non è stato già fatto
                     self.moves_made.add(mov)
                     self.safe_movements.remove(mov)
+                    return mov
+        elif self.safe_movements_with_number:
+            for mov in self.safe_movements_with_number: # per ogni movimento
+                if mov not in self.moves_made: # prendo il primo che non è stato già fatto
+                    self.moves_made.add(mov)
+                    self.safe_movements_with_number.remove(mov)
                     return mov
         else:
             return (None,None)

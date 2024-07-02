@@ -5,16 +5,16 @@ from minesweeper import Minesweeper
 from agent import Agent
 
 
-HEIGHT = 4
-WIDTH = 4
-MINES = 4
+HEIGHT = 6
+WIDTH = 6
+MINES = 6
 first_move = True
 lost = False
 revealed = set()
 flags = set()
 # Create game and AI agent
 game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-ai = Agent(height=HEIGHT, width=WIDTH,n_mines=MINES)
+ai = Agent(height=HEIGHT, width=WIDTH,n_mines=MINES, game=game)
 
 def print_field(field,height,width):
         #os.system('cls' if os.name == 'nt' else 'clear')
@@ -61,9 +61,12 @@ while not lost:
                         move = Cell(i,j)
                     else:
                         first_move = False
-                print(f"[Agent] Select a random element --> ({move.row},{move.col})\nValue found {game.field[move.row][move.col].get_number()}")
+                value = game.field[move.row][move.col].get_number()
+                value_str = "Mine" if value is None else str(value)
+                print(f"[Agent] Select a random element --> ({move.row},{move.col})\nValue found: {value_str}")
             else: #means NO RANDOM MOVE possibile due lack of space = VICTORY
-                print("No moves left to make.")
+                print("No moves left to make ==> IA WIN!")
+                sys.exit()
         else:
             move = Cell(i,j)
             print(f"AI making safe move --> ({i},{j})\nValue found: {game.field[i][j].get_number()}")
