@@ -27,24 +27,26 @@ class Agent:
         self.generate_clauses()
         # add rules to kb
         self.build_kb()
-        print("Number of rules: ",len(self.clauses))
-
+        print("Initial KB's len: ",len(self.knowledge_base.clauses))
+        for rule in self.knowledge_base.clauses[100:150]:
+            print(rule)
 
     def generate_clauses(self):
         for i in range(self.height):
             for j in range(self.width):
                 neighbors = [
                     (i-1, j-1), (i-1, j), (i-1, j+1),
-                    (i, j-1),           (i, j+1),
+                    (i, j-1),       (i, j+1),
                     (i+1, j-1), (i+1, j), (i+1, j+1)
                 ]
                 neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
                 num_neighbors = len(neighbors)
 
-                # Regole per N_ij_0
+                # Regole per N_i_j_0
+                self.clauses.append(f"N_{i}_{j}_0 ==> S_{i}_{j}")
                 for (x, y) in neighbors:
                     self.clauses.append(f"N_{i}_{j}_0 ==> S_{x}_{y}")
-
+                    
                 # Regole per N_i_j_k (k > 0)
                 for k in range(1, num_neighbors + 1):
                     for subset in combinations(neighbors, k):
@@ -54,19 +56,45 @@ class Agent:
                             self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> {safe_neighbor}")
                         for mine in subset:
                             self.clauses.append(f"N_{i}_{j}_{k} & {condition} ==> B_{mine[0]}_{mine[1]}")
-            
-            '''# Aggiunge una clausola che indica che la cella (i, j) contiene una bomba
-            self.clauses.append(f"B_{i}_{j}")
-            for (x, y) in neighbors:
+                # Regole per bomba
                 for k in range(1, len(neighbors) + 1):
+                    condition = " & ".join([f'S_{x}_{y}' for (x, y) in neighbors])
+                    self.clauses.append(f'N_{i}_{j}_{k} & {condition} ==> B_{i}_{j}')
+
+                '''for k in range(1, num_neighbors + 1):
+                    condition = " & ".join([f'~S_{x}_{y}' for (x, y) in neighbors])
+                    self.knowledge_base.append(expr(f'N_{i}_{j}_{k}') & expr(condition) >> expr(f'B_{i}_{j}'))'''
+        '''for i in range(self.height):
+            for j in range(self.width):
+                neighbors = [
+                    (i-1, j-1), (i-1, j), (i-1, j+1),
+                    (i, j-1),           (i, j+1),
+                    (i+1, j-1), (i+1, j), (i+1, j+1)
+                ]
+                neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
+                num_neighbors = len(neighbors)
+
+                # Regole per N_i_j_0
+                for (x, y) in neighbors:
+                    self.clauses.append(expr(f'N_{i}_{j}_0') >> expr(f'S_{x}_{y}'))
+
+                # Regole per N_i_j_k (k > 0)
+                for k in range(1, num_neighbors + 1):
                     for subset in combinations(neighbors, k):
-                        if (i, j) in subset:
-                            condition = " & ".join([f"B_{a}_{b}" for (a, b) in subset])
-                            safe_neighbors = [f"S_{a}_{b}" for (a, b) in neighbors if (a, b) not in subset]
-                            for safe_neighbor in safe_neighbors:
-                                self.clauses.append(f"N_{x}_{y}_{k} & {condition} ==> {safe_neighbor}")
-                            for mine in subset:
-                                self.clauses.append(f"N_{x}_{y}_{k} & {condition} ==> B_{mine[0]}_{mine[1]}")'''
+                        condition = expr(" & ".join([f'B_{x}_{y}' for (x, y) in subset]))
+                        safe_neighbors = [expr(f'S_{x}_{y}') for (x, y) in neighbors if (x, y) not in subset]
+                        for safe_neighbor in safe_neighbors:
+                            self.clauses.append(expr(f'N_{i}_{j}_{k}') & condition >> safe_neighbor)
+                        for mine in subset:
+                            self.clauses.append(expr(f'N_{i}_{j}_{k}') & condition >> expr(f'B_{mine[0]}_{mine[1]}'))
+
+                # Regole per identificare mine certe
+                for k in range(1, num_neighbors + 1):
+                    condition = " & ".join([f'~S_{x}_{y}' for (x, y) in neighbors])
+                    self.clauses.append(expr(f'N_{i}_{j}_{k}') & expr(condition) >> expr(f'B_{i}_{j}'))'''
+
+
+
 
 
     def add_knowledge(self,row,col,nearby):
@@ -76,6 +104,7 @@ class Agent:
         # devo creare l'espressione per cui fare la tell
         #clauses = self.build_expression(row,col,nearby)
         # aggiungo la clausesola alla kb
+        print("Lunghezza della kb prima dell'inferenza ",len(self.knowledge_base.clauses))
         self.knowledge_base.tell(expr(f'N_{row}_{col}_{nearby}'))
         #print("Clausola inserità nella: ",clauses)
         #processo di inferenza: possiamo inferire qualcosa dai vicini? Se si li aggiungiamo alle varie liste.
@@ -101,6 +130,7 @@ class Agent:
                 
                 # alla fine del processo agigungiamo il movimento come fatto
                 self.moves_made.add((row,col))'''
+    
     def inference(self,row,col):
         neighbors = [
                     (row-1, col-1), (row-1, col), (row-1, col+1),
@@ -114,12 +144,15 @@ class Agent:
             if (i != row or j != col) and ((i, j) not in self.moves_made) and ((i, j) not in self.safe_movements) and ((i, j) not in self.mines):
                 if pl_fc_entails(self.knowledge_base, expr(f'S_{i}_{j}')):
                     self.safe_movements.add((i, j))
+                    self.knowledge_base.tell(expr(f'S_{i}_{j}'))
                 if pl_fc_entails(self.knowledge_base, expr(f'B_{i}_{j}')):
+                    print("E' una bomba")
+                    self.knowledge_base.tell(expr(f'B_{i}_{j}'))
                     self.mines.add((i, j))
-            '''for k in range(num_neighbors + 1):
-                if pl_fc_entails(self.knowledge_base, expr(f'N_{i}_{j}_{k}')):
-                    print(f"Cell ({i}, {j}) has {k} mines around it.")
-                    #return k'''
+                '''if self.bc(self.knowledge_base,expr(f'S_{i}_{j}')):
+                    self.safe_movements.add((i, j))
+                    self.knowledge_base.tell(expr(f'S_{i}_{j}'))'''
+
         #return None 
 
 
@@ -170,6 +203,17 @@ class Agent:
         else:
             return None
         
+    def bc(self,kb,query):
+        if query in kb.clauses:
+            return True
+        
+        for clause in kb.clauses:
+            if isinstance(clause, Expr) and clause.op == "==>" and clause.args[1] == query:
+                premises = conjuncts(clause.args[0])
+                if all(self.bc(kb,premise) for premise in premises):
+                    return True
+
+        return False
 
     def print(self,title):
         print(title)
@@ -189,5 +233,5 @@ class Agent:
         for mov in self.moves_made:
             string+=f'{mov} '
         print(string)
-        print("Number of rules: ",len(self.clauses))
+        print("Len of KB: ", len(self.knowledge_base.clauses))
         print("-------------------------------------------------------------------")
