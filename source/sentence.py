@@ -28,7 +28,6 @@ class Sentence():
         '''
         if len(self.cells) == self.count and self.count != 0:
             # means that all the cells are mines
-            print('Mine Identified! - ', self.cells)
             return self.cells
         else:
             # we cannot determine which specific cells are mines, so return an empty set

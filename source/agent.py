@@ -79,8 +79,6 @@ class Agent():
         safe cell, how many neighboring cells have mines in them.
         """
         # Mark the cell as a made and safe movement
-        print("[START] ADD_KNOWLEDGE FUNCTION")
-        print("Aggiungo il movimento alla lista dei movimenti fatti e lo fleggo come safe")
         self.moves_made.add(cell)
         self.mark_safe(cell)
         #time.sleep(2)
@@ -97,15 +95,16 @@ class Agent():
                 
                 # if is know that is mine the var count is decreased
                 if adj_cell in self.mines:
-                    print("So già che uno di questi è una mina quindi decremento il counter")
+                    print("The cell is a mine, decreasing counter.")
                     #time.sleep(2)
                     count = count - 1
                     continue
                 
                 # within the limits of the playing field
-                # we are not sure whether adj_cell is mine or safe
+                # adj_cell is not in safe set and not in mines set, so we have not info on it
+                # we are not sure whether adj_cell is mine or safe so they are putted in a new sentece. 
                 if 0 <= row < self.height and 0 <= col < self.width:
-                    print("Non ho certezze sulla cella ",row,col," quindi diventano una nuova frase da aggiungere:")
+                    #print("Non ho certezze sulla cella ",row,col," quindi diventano una nuova frase da aggiungere:")
                     #time.sleep(2)
                     new_sentence.add(adj_cell)
 
@@ -115,8 +114,7 @@ class Agent():
         
         # We add the information in the form {A,B,C,D} = count i.e. among those cells there are 'count' mines, but we don't yet know which ones they are
         self.knowledge_base.append(sentence)
-        # Function to infer mines and safe cells, and  new knowledge
-        print("Inizia il processo di inferenza perché abbiamo scoperto cose nuove")
+        # Function to infer with the new sentence mines and safe cells, and  new knowledge
         new_inference = True
         while new_inference:
             new_inference = False
@@ -176,7 +174,6 @@ class Agent():
                             print('New Inferred Knowledge: ', new_sentence, 'from', sentence_1, ' and ', sentence_2)
                             self.knowledge_base.append(new_sentence)
 
-        print("[END] KNOWLEDG FUNCTION")
         # Print out AI current knowledge to terminal:
         print('Current AI KB length: ',len(self.knowledge_base))
         mines = Sentence(self.mines,len(self.mines))

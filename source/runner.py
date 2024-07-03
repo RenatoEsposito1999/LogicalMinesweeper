@@ -235,7 +235,8 @@ while True:
             nearby = game.get_nearby_mines(move)
             if nearby is not None:
                 revealed.add(move)
-                ai.add_knowledge(move, game.get_nearby_mines(move))
+                #ai.add_knowledge(move, game.get_nearby_mines(move))
+                ai.add_knowledge(move, nearby)
             else:
                 print("[ERROR]: No cell corresponds to the chosen movement")
     pygame.display.flip()
