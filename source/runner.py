@@ -52,10 +52,9 @@ ai = Agent(height=HEIGHT, width=WIDTH)
 revealed = set()
 flags = set()
 lost = False
-
+win = False
 # Show instructions initially
 instructions = True
-
 while True:
 
     # Check if game quit
@@ -164,6 +163,7 @@ while True:
     # Display text
     if game.mines == flags:
         text = 'Won'
+        win = True
         # Automatically show the remaining cells
         for i in range(HEIGHT):
             for j in range(WIDTH):
@@ -183,7 +183,7 @@ while True:
 
     left, _, right = pygame.mouse.get_pressed()
 
-    # Check for a right-click to toggle flagging
+    '''# Check for a right-click to toggle flagging
     if right == 1 and not lost:
         mouse = pygame.mouse.get_pos()
         for i in range(HEIGHT):
@@ -194,12 +194,13 @@ while True:
                     else:
                         flags.add(Cell(i, j))
                     time.sleep(0.2)
-
-    elif left == 1:
+'''
+    #elif left == 1:
+    if left == 1: 
         mouse = pygame.mouse.get_pos()
 
         # If AI button clicked, make an AI move
-        if aiButton.collidepoint(mouse) and not lost:
+        if aiButton.collidepoint(mouse) and not lost and not win:
             move = ai.make_safe_move()
             if move is None: # means no safe move
                 move = ai.make_random_move()
@@ -222,6 +223,7 @@ while True:
         elif resetButton.collidepoint(mouse):
             game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
             ai = Agent(height=HEIGHT, width=WIDTH)
+            win = False
             revealed = set()
             flags = set()
             lost = False
@@ -229,14 +231,14 @@ while True:
             move = None
             continue
 
-        # User-made move
+        '''# User-made move
         elif not lost:
             for i in range(HEIGHT):
                 for j in range(WIDTH):
                     if (cells[i][j].collidepoint(mouse)
                             and Cell(i, j) not in flags
                             and Cell(i, j) not in revealed):
-                        move = Cell(i, j)
+                        move = Cell(i, j)'''
         
     # Make move and update AI knowledge
     if move:
