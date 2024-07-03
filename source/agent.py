@@ -9,18 +9,22 @@ class Agent():
     Thi class implement the agent that can play Minesweeper
     """
     # contains a set of all cells already clicked on
-    moves_made = set()
+    moves_made = None
     # contains a set of all cells known to be safe
-    safes = set()
+    safes = None
     # contains a set of all cells known to be mines
-    mines = set()
+    mines = None
     # KB that is a list of all of the Sentences that the Agent knows to be true
-    knowledge_base = []
+    knowledge_base = None
 
     def __init__(self, height, width):
         # Set initial height and width
         self.height = height
         self.width = width
+        self.moves_made = set()
+        self.safes = set()
+        self.mines = set()
+        self.knowledge_base = []
 
     def mark_mine(self, cell):
         """
@@ -95,7 +99,6 @@ class Agent():
                 
                 # if is know that is mine the var count is decreased
                 if adj_cell in self.mines:
-                    print("The cell is a mine, decreasing counter.")
                     #time.sleep(2)
                     count = count - 1
                     continue
@@ -181,3 +184,4 @@ class Agent():
         remaining = Sentence(self.safes-self.moves_made,len(self.safes-self.moves_made))
         print('Safe Moves Remaining: ', remaining)
         print('====================================================')
+        return self.mines

@@ -162,7 +162,18 @@ while True:
    
 
     # Display text
-    text = "Lost" if lost else "Won" if game.mines == flags else ""
+    if game.mines == flags:
+        text = 'Won'
+        # Automatically show the remaining cells
+        for i in range(HEIGHT):
+            for j in range(WIDTH):
+                if (Cell(i,j) not in revealed) and Cell(i,j) not in flags:
+                    revealed.add(Cell(i,j)) 
+    elif lost:
+        text = 'Lost'
+    else:
+        text = ""
+    #text = "Lost" if lost else "Won" if game.mines == flags else ""
     text = mediumFont.render(text, True, WHITE)
     textRect = text.get_rect()
     textRect.center = ((5 / 6) * width, (2 / 3) * height)
@@ -177,11 +188,11 @@ while True:
         mouse = pygame.mouse.get_pos()
         for i in range(HEIGHT):
             for j in range(WIDTH):
-                if cells[i][j].collidepoint(mouse) and (i, j) not in revealed:
-                    if (i, j) in flags:
-                        flags.remove((i, j))
+                if cells[i][j].collidepoint(mouse) and (Cell(i, j) not in revealed):
+                    if (Cell(i, j) in flags):
+                        flags.remove(Cell(i, j))
                     else:
-                        flags.add((i, j))
+                        flags.add(Cell(i, j))
                     time.sleep(0.2)
 
     elif left == 1:
@@ -236,7 +247,13 @@ while True:
             if nearby is not None:
                 revealed.add(move)
                 #ai.add_knowledge(move, game.get_nearby_mines(move))
-                ai.add_knowledge(move, nearby)
+                bombs = ai.add_knowledge(move, nearby)
+                # To flag the found bombs
+                if bombs:
+                    for b in bombs:
+                        if b not in flags:
+                            flags.add(b)
             else:
                 print("[ERROR]: No cell corresponds to the chosen movement")
+
     pygame.display.flip()
