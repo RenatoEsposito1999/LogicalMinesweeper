@@ -1,203 +1,186 @@
-'''
-VERIFICARE CHE LE REGOLE DELLE BOMBE SIANO SENSATE, PROBABILEMNTE DEVO APPLIKCARE L'INFERENZA PER OGNI CELLA CHE CONOSCO. 
-'''
+#https://cs50.harvard.edu/extension/ai/2020/spring/projects/1/minesweeper/#:~:text=Propositional%20Logic&text=One%20way%20we%20could%20represent,a%20mine%2C%20and%20false%20otherwise.
 from random import randrange
-import re
-from library.utils import *
-from library.logic import *
-from itertools import combinations
+import random
+import time
 from cell import Cell
-class Agent:
-    knowledge_base = PropDefiniteKB()
-    height = None
-    width = None
-    n_mines = None
-    clauses = []
-    # Mine trovate 
-    mines = set()
-    # Movimenti fatti
+from sentence import Sentence
+class Agent():
+    """
+    Thi class implement the agent that can play Minesweeper
+    """
+    # contains a set of all cells already clicked on
     moves_made = set()
-    # Movimenti sicuri, cioè con numero zero
-    safe_movements = set()
-    game = None # Minesweeper class object
-    
-    def __init__(self,height,width,n_mines, game) -> None:
+    # contains a set of all cells known to be safe
+    safes = set()
+    # contains a set of all cells known to be mines
+    mines = set()
+    # KB that is a list of all of the Sentences that the Agent knows to be true
+    knowledge_base = []
+
+    def __init__(self, height, width):
+        # Set initial height and width
         self.height = height
         self.width = width
-        self.n_mines = n_mines
-        self.game = game
-        # build definite clauses
-        self.generate_clauses()
-        # add rules to kb
-        self.build_kb()
-        print("Initial KB's len: ",len(self.knowledge_base.clauses))
-        for rule in self.knowledge_base.clauses[:10]:
-            print(rule)
-        print(len(self.clauses))
 
-    def generate_clauses(self):
-        for row in range(self.height):
-            for col in range(self.width):
-                neighbors = [
-                    (row-1, col-1), (row-1, col), (row-1, col+1),
-                    (row, col-1),             (row, col+1),
-                    (row+1, col-1), (row+1, col), (row+1, col+1)
-                ]
-                # Filtra i vicini validi che non escono dai bordi del campo
-                neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
-                num_neighbors = len(neighbors)
-                # Rules for mines
-                # Genera clausole per ogni possibile numero di bombe (da 1 a num_neighbors)
-                for k in range(1, num_neighbors + 1):
-                    for bomb_comb in combinations(neighbors, k):
-                        non_bomb_neighbors = [n for n in neighbors if n not in bomb_comb]
-                        if len(non_bomb_neighbors) == num_neighbors - k:
-                            premise_parts = [f"N_{row}_{col}_{k}"]
-                            # Aggiungi condizioni per i vicini che non sono bombe
-                            if non_bomb_neighbors:
-                                premise_parts.extend([f"N_{nx}_{ny}_0" for (nx, ny) in non_bomb_neighbors])
-                            # Aggiungi la conseguenza per ogni bomba individuata
-                            for (bx, by) in bomb_comb:
-                                self.clauses.append(f"{' & '.join(premise_parts)} ==> B_{bx}_{by}")
+    def mark_mine(self, cell):
+        """
+        Marks a cell as a mine, and updates all knowledge
+        to mark that cell as a mine as well.
+        """
+        self.mines.add(cell)
+        for sentence in self.knowledge_base:
+            sentence.mark_mine(cell)
 
-    def add_knowledge(self,row,col,nearby):
-        # N.B: quando arrivano delle coordinate so per certo che queste non sono bombe perché altrimenti il gioco non 
-        # avrebbe mai raggiunto questa porzione di codice ma sarebbe semplicemente terminato il gioco.
-
-        print("Lunghezza della kb prima dell'inferenza ",len(self.knowledge_base.clauses))
-        # aggiungo l'informazione alla kb se non c'è già
-        if expr(f'N_{row}_{col}_{nearby}') not in self.knowledge_base.clauses:
-            self.knowledge_base.tell(expr(f'N_{row}_{col}_{nearby}'))
-        #print("Clausola inserità nella: ",clauses)
-        #processo di inferenza: possiamo inferire qualcosa dai vicini? Se si li aggiungiamo alle varie liste.
-        self.inference(row,col,nearby)
-        self.print(title='[Agent] new informations after inference process')
-
-    '''def inference(self,row,col):
-        for i in range(row-1, row+2):
-            for j in range(col-1, col+2):
-                # se il vicino è nel campo (quindi è valido) e non è già stato selezionato come movimento fatto o se non si hanno già informazioni
-                if (0 <= i < self.height) and (0 <= j < self.width) and (i != row or j != col) and ((i,j) not in self.moves_made) and ((i,j) not in self.safe_movements) and ((i,j) not in self.mines):
-    
-                    # per ogni vicino posso inferire che è safe? se si aggiungolo alla lista safe.'
-                    if pl_fc_entails(self.knowledge_base,expr(f'S_{i}_{j}')):
-                        self.safe_movements.add((i,j))
-                    # per ogni vicino posso inferire che è una bomba? aggiungilo alla lista bombe.
-                    # per ogni vicino posso inferire che ha un numero? Aggiungo alla lista dei numeri.
-                    elif pl_fc_entails(self.knowledge_base,expr(f'N_{i}_{j}')): # E' da capire come codificare questooooooooooooooooooo
-                        self.safe_movements_with_number.add((i,j))
-                    elif pl_fc_entails(self.knowledge_base,expr(f'B_{i}_{j}')):
-                        self.mines.add((i,j))
-                    # N.B: Fare attenzione al fatto che se è safe potrebbe essere anche nella N_ _ _
-                
-                # alla fine del processo agigungiamo il movimento come fatto
-                self.moves_made.add((row,col))
-    '''
-
-    def get_valid_neighbors(self,row,col):
-        neighbors = [
-                    (row-1, col-1), (row-1, col), (row-1, col+1),
-                    (row, col-1),             (row, col+1),
-                    (row+1, col-1), (row+1, col), (row+1, col+1)
-                ]
-        neighbors = [(x, y) for (x, y) in neighbors if 0 <= x < self.height and 0 <= y < self.width]
-        return neighbors
-    
-    def inference(self,row,col,nearby):
-        
-        neighbors = self.get_valid_neighbors(row,col)
-        num_neighbors = len(neighbors)
-        for (i, j) in neighbors:
-            # se non ho informazioni su i,j cioè se non è un movimenti già fatto, o se so che non è una mina, ne che è un movimento sicuro 
-            if (i, j) not in self.moves_made and (i, j) not in self.safe_movements and (i, j) not in self.mines:
-                if nearby == 0:
-                    '''
-                    Se dovessi codificare in logica proposizionale anche le informazioni dei safe andrei a creare una quantità enorme di regole che complicherebbero le regole
-                    per trovare le bombe, poichè queste regole rappresentano tutte le possibili combiniziazioni per cui il numero di regole cresce in maniera esponenziale
-                    rispetto al numero di simboli. Possiamo vederlo come un trade-off.
-                    '''
-                    # se ho 0 vuol dire che i miei vicini sono sicuri.
-                    self.safe_movements.add((i,j))
-                    new_nearby = self.game.get_nearby_mines(Cell(i,j))
-                    self.knowledge_base.tell(expr(f'N_{i}_{j}_{new_nearby}'))
-                    self.inference(i, j, new_nearby)
-                else: #nearby > 0
-                    if pl_fc_entails(self.knowledge_base,expr(f'B_{i}_{j}')):
-                        print(f'B_{i}_{j} è una bomba')
-                        self.mines.add((i,j))
-                        self.knowledge_base.tell(expr(f'B_{i}_{j}'))
-                
-
+    def mark_safe(self, cell):
+        """
+        Marks a cell as safe, and updates all knowledge
+        to mark that cell as safe as well.
+        """
+        self.safes.add(cell)
+        for sentence in self.knowledge_base:
+            sentence.mark_safe(cell)
 
     def make_safe_move(self):
-        # Deve generare un movimento non fatto che la KB sa che è safe o che contiene un numero.
-        if self.safe_movements: # Se ci sono movimenti sicuri
-            for mov in self.safe_movements: # per ogni movimento
-                if mov not in self.moves_made: # prendo il primo che non è stato già fatto
-                    self.moves_made.add(mov)
-                    self.safe_movements.remove(mov)
-                    return mov
+        """
+        Returns a safe cell to choose on the Minesweeper field.
+        The move must be known to be safe, and not already a move
+        that has been made.
+        """
+        safe_moves = self.safes - self.moves_made
+        if safe_moves:
+            choice = random.choice(list(safe_moves))
+            print(f"The agent selected a safe movement = ({choice.row},{choice.col})")
+            return choice
         else:
-            return (None,None)
+            return None
 
-# ragionare se posso usare concetti di probabilità per selezionare elementi con una probabilità minore.
     def make_random_move(self):
-        spaces_left = (self.height * self.width) - (len(self.moves_made) + len(self.mines)) #no space. 
+        """
+        Returns a move to make on the Minesweeper field.
+        """
+        # Space left on the field
+        spaces_left = (self.height * self.width) - (len(self.moves_made) + len(self.mines))
+        
+        # If no spaces return None = no movement possible
         if spaces_left == 0:
             return None
+        
         while True:
             i = randrange(self.height)
             j = randrange(self.width)
-            if (i, j) not in (self.moves_made) and ((i, j) not in self.mines):
-                # fa il movimento e lo aggiungo al set dei movimenti fatti
-                self.moves_made.add((i,j))
-                return i, j
+            cell = Cell(i,j)
+            # have not already been chosen and are not known to be mines
+            if (cell not in self.moves_made) and (cell not in self.mines):
+                return cell
+            
+    def add_knowledge(self, cell, count):
+        """
+        Called when the Minesweeper field tells us, for a given
+        safe cell, how many neighboring cells have mines in them.
+        """
+        # Mark the cell as a made and safe movement
+        print("[START] ADD_KNOWLEDGE FUNCTION")
+        print("Aggiungo il movimento alla lista dei movimenti fatti e lo fleggo come safe")
+        self.moves_made.add(cell)
+        self.mark_safe(cell)
+        #time.sleep(2)
+        # Add new sentence to the Agent's KB based on the value of `cell` and `count`
+        new_sentence = set()
 
-    def build_kb(self):
-        for c in self.clauses:
-            self.knowledge_base.tell(expr(c))
+        # Loop over adjacent cells
+        for row in range(cell.row - 1, cell.row + 2):
+            for col in range(cell.col - 1, cell.col + 2):
+                adj_cell = Cell(row,col)
+                # skip the cell itself and also when adj is know to be safe
+                if (adj_cell == cell) or (adj_cell in self.safes):
+                    continue
+                
+                # if is know that is mine the var count is decreased
+                if adj_cell in self.mines:
+                    print("So già che uno di questi è una mina quindi decremento il counter")
+                    #time.sleep(2)
+                    count = count - 1
+                    continue
+                
+                # within the limits of the playing field
+                # we are not sure whether adj_cell is mine or safe
+                if 0 <= row < self.height and 0 <= col < self.width:
+                    print("Non ho certezze sulla cella ",row,col," quindi diventano una nuova frase da aggiungere:")
+                    #time.sleep(2)
+                    new_sentence.add(adj_cell)
 
-    def get_value_from_string(self, s):
-        pattern = r"[NS]_(\d+)_(\d+)(?:_(\d+))?"
-        match = re.search(pattern, s)
-        if match:
-            N_or_S = match.group(0)[0]
-            i = int(match.group(1))
-            j = int(match.group(2))
-            k = int(match.group(3)) if match.group(3) else None
-            return N_or_S, i, j, k
-        else:
-            return None
+        # just for printing purposes
+        sentence = Sentence(new_sentence, count)
+        print(f'The moving on cell: ({cell.row},{cell.col}) has added sentence = {sentence} to knowledge base' )
         
-    def bc(self,kb,query):
-        if query in kb.clauses:
-            return True
-        
-        for clause in kb.clauses:
-            if isinstance(clause, Expr) and clause.op == "==>" and clause.args[1] == query:
-                premises = conjuncts(clause.args[0])
-                if all(self.bc(kb,premise) for premise in premises):
-                    return True
+        # We add the information in the form {A,B,C,D} = count i.e. among those cells there are 'count' mines, but we don't yet know which ones they are
+        self.knowledge_base.append(sentence)
+        # Function to infer mines and safe cells, and  new knowledge
+        print("Inizia il processo di inferenza perché abbiamo scoperto cose nuove")
+        new_inference = True
+        while new_inference:
+            new_inference = False
+            mines = set()
+            safes = set()
+            # We collect all the cells that we know are safe and those that are mines
+            for sentence in self.knowledge_base:
+                # Returns the set of all cells in each setence known to be safes.
+                safes = safes.union(sentence.known_safes())
+                # Returns the set of all cells in each setence known to be mines.
+                mines = mines.union(sentence.known_mines())
 
-        return False
+            # If there are safe cells or mines identified, update the Knowledge Base 
+            # by marking them as such and set new_inference to True to continue the loop.
+            if safes:
+                new_inference = True
+                for safe in safes:
+                    self.mark_safe(safe)
+            if mines:
+                new_inference = True
+                for mine in mines:
+                    self.mark_mine(mine)
 
-    def print(self,title):
-        print(title)
-        print("[Agent]: Safe movements:")
-        string = ""
-        for mov in self.safe_movements:
-            if mov not in self.moves_made:
-                string+=f'{mov} '
-        print(string)
-        print("[Agent]: Knowed mines:")
-        string = ""
-        for mov in self.mines:
-            string+=f'{mov} '
-        print(string)
-        print("[Agent]: Movements already made:")
-        string = ""
-        for mov in self.moves_made:
-            string+=f'{mov} '
-        print(string)
-        print("Len of KB: ", len(self.knowledge_base.clauses))
-        print("-------------------------------------------------------------------")
+            # Remove any empty sentences from knowledge base:
+            empty = Sentence(set(), 0)
+            new_knowledge = []
+            for sentence in self.knowledge_base:
+                if sentence != empty:
+                    new_knowledge.append(sentence)
+            self.knowledge_base = new_knowledge
+
+            # Try to infer new sentences from the current ones:
+            for sentence_1 in self.knowledge_base:
+                for sentence_2 in self.knowledge_base:
+
+                    # Ignore when sentences are ==
+                    if sentence_1.cells == sentence_2.cells:
+                        continue
+
+                    if sentence_1.cells == Cell() and sentence_1.count > 0:
+                        print('Error - sentence with no cells and count created')
+                        raise ValueError
+
+                    # Create a new sentence if 1 is subset of 2, and not in KB:
+                    # ex: sentence_1: {(1, 1), (1, 2)} = 1 
+                    #     sentence_2: {(1, 1), (1, 2), (1, 3)} = 2 
+                    #     sentece_2 - sentece_1 = {(1,3)} = 1
+                    if sentence_1.cells.issubset(sentence_2.cells):
+                        new_sentence_cells = sentence_2.cells - sentence_1.cells
+                        new_sentence_count = sentence_2.count - sentence_1.count
+
+                        new_sentence = Sentence(new_sentence_cells, new_sentence_count)
+
+                        # Add to knowledge if not already in KB:
+                        if new_sentence not in self.knowledge_base:
+                            new_inference = True
+                            print('New Inferred Knowledge: ', new_sentence, 'from', sentence_1, ' and ', sentence_2)
+                            self.knowledge_base.append(new_sentence)
+
+        print("[END] KNOWLEDG FUNCTION")
+        # Print out AI current knowledge to terminal:
+        print('Current AI KB length: ',len(self.knowledge_base))
+        mines = Sentence(self.mines,len(self.mines))
+        print('Known Mines: ', mines)
+        remaining = Sentence(self.safes-self.moves_made,len(self.safes-self.moves_made))
+        print('Safe Moves Remaining: ', remaining)
+        print('====================================================')

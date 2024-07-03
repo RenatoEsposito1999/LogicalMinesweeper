@@ -3,7 +3,6 @@ class Cell:
     col = None
     number = None
     has_mine = False
-    unknow = True
     def __init__(self,row=None,col=None):
         self.row = row
         self.col = col
@@ -29,5 +28,3 @@ class Cell:
     # In Python, an object must implement the __hash__ method to be hashable, which means it can be used as a key in a dictionary or as an element in a set.
     def __hash__(self):
         return hash((self.row, self.col))
-    def __str__(self) -> str:
-        return f"({self.row},{self.col})"
