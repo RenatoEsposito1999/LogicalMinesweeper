@@ -1,6 +1,6 @@
 import random
 from cell import Cell
-# It is a representation of the game - Manages the game
+# It is a representation of the game
 class Minesweeper():
     def __init__(self, height, width, mines):
         self.height = height
@@ -27,7 +27,7 @@ class Minesweeper():
                 self.mines.add(Cell(i, j))
                 self.field[i][j].set_has_mine(True)
                 count+=1
-                #self.field[i][j] = True
+
         
         # Added the number of nearby mines.
         self.compute_nearby_mines()
@@ -81,8 +81,4 @@ class Minesweeper():
         '''Returns the number of nearby mines of a given cell'''
         return self.get_cell_from_field(cell).number
 
-    def won(self):
-        #Checks if all mines have been flagged.
-        return self.mines_found == self.mines
-    
-    
+

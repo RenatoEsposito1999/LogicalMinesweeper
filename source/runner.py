@@ -91,9 +91,7 @@ while True:
 
         # Rules
         rules = [
-        "Click a cell to reveal it.",
         "Click on 'Next move' to allow the agent to move",
-        "Right-click a cell to mark it as a mine.",
         "Mark all mines successfully to win!"
     ]
         for i, rule in enumerate(rules):
