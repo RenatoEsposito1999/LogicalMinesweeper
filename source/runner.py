@@ -2,9 +2,6 @@ import pygame
 import sys
 import time
 
-# from minesweeper import Minesweeper, MinesweeperAI
-#from source.Esempi.EsempioFunzionante import Minesweeper, MinesweeperAI
-from Esempi.EsempioFunzionante import MinesweeperAI
 from cell import Cell
 from minesweeper import Minesweeper
 from agent import Agent
