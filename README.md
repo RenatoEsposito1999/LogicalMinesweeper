@@ -24,7 +24,7 @@ The structure of the application, including the user interface (UI), was already
 Minesweeper is a single-player logic game whose goal is to discover all the cells in a grid that do not contain mines.
 
 ### Minesweeper Features:
-- **Non-deterministic**: the player doesn't know the state of a cell until clicks on it.
+- **Deterministic**: once the mine layout is established, as each move has a predictable outcome based on this layout. However, from the player's perspective, the game can be perceived as non-deterministic due to initial uncertainty and the need to deduce the location of mines without complete information.
 - **Partially observable**: the player does not have access to all the information at the beginning of the game, he can only see the cells he has discovered, while the others remain covered. Hidden information must be inferred from the available partial information.
 - **Game Environment**: a grid* of hidden cells, some of which contain mines**, each discovered cell shows the number of adjacent mines.
     - '*' 6x6.
