@@ -146,7 +146,7 @@ To get started with this project, follow these steps:
 ## Usage
 To run the Minesweeper game, execute the following command:
 ```bash
-python minesweeper.py
+python runner.py
 ```
 The game interface will launch, and you can start playing by clicking on the cells. The AI will assist you in making logical decisions based on the propositional logic implemented in the game.
 
