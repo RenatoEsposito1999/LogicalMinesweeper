@@ -25,7 +25,7 @@ Minesweeper is a single-player logic game whose goal is to discover all the cell
 
 ### Minesweeper Features:
 - **Non-deterministic**: the player doesn't know the state of a cell until clicks on it.
-- **Partially observable:**: the player does not have access to all the information at the beginning of the game, he can only see the cells he has discovered, while the others remain covered. Hidden information must be inferred from the available partial information.
+- **Partially observable**: the player does not have access to all the information at the beginning of the game, he can only see the cells he has discovered, while the others remain covered. Hidden information must be inferred from the available partial information.
 - **Game Environment**: a grid* of hidden cells, some of which contain mines**, each discovered cell shows the number of adjacent mines.
     - '*' 6x6.
     - '**' in total there are 6 mines. 
